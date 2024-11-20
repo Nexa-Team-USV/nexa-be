@@ -4,10 +4,7 @@ import "dotenv/config";
 import authRoutes from "./routes/auth.route.js";
 
 const app = express();
-
-app.get("/", (req, res) => {
-  res.send("It works!");
-});
+app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 

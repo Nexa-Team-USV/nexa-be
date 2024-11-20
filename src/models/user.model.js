@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import { mongooseClient } from "../db/connectDB.js";
 
-const userSchema = new Schema(
+const userSchema = new mongooseClient.Schema(
   {
     username: String,
     email: String,
@@ -10,4 +10,4 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-export const User = mongoose.model("User", userSchema);
+export const User = mongooseClient.model("User", userSchema);

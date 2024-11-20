@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 
+export const mongooseClient = new mongoose.Mongoose();
+
 export function connectDB() {
-  mongoose
+  mongooseClient
     .connect(process.env.MONGO_URI)
     .then(() => {
       console.log(`Running on port: ${process.env.PORT}`);
