@@ -1,13 +1,13 @@
 import validator from "validator";
 import bcrypt from "bcrypt";
+import { generate } from "generate-password";
 
 import { User } from "../models/user.model.js";
-import { generateJWT } from "../utils/generateJWT.js";
 
 const { isEmail, isStrongPassword } = validator;
 
 export const signup = async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, specialization, group, role } = req.body;
 
   try {
     // Email validation
@@ -19,13 +19,18 @@ export const signup = async (req, res) => {
       throw new Error("Invalid email!");
     }
 
-    // Password validation
-    if (!password) {
-      throw new Error("The password field is required!");
+    // Specialization validation
+    if (!specialization) {
+      throw new Error("The specialization field is required!");
     }
 
-    if (!isStrongPassword(password)) {
-      throw new Error("Password not strong enough!");
+    if (!(specialization === "licenta" || specialization === "master")) {
+      throw new Error("Invalid specialization!");
+    }
+
+    // Group validation
+    if (!group) {
+      throw new Error("The group field is required!");
     }
 
     // Role validation
@@ -43,22 +48,28 @@ export const signup = async (req, res) => {
       throw new Error("This user already exists!");
     }
 
+    // Generates random password
+    const password = generate({
+      length: 40,
+      numbers: true,
+      symbols: true,
+    });
+
     // Hashes the password
     const hashed = bcrypt.hashSync(password, 10);
 
     // Creates the user
-    const user = new User({ username: "", email, password: hashed, role });
+    const user = new User({
+      username: "",
+      email,
+      password: hashed,
+      specialization,
+      group,
+      role,
+    });
     await user.save();
 
-    // Generates the jwt
-    const token = generateJWT({
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-    });
-
-    res.status(201).json({ token });
+    res.status(201).json({ message: "User created!" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

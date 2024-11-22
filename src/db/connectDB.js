@@ -8,7 +8,8 @@ export function connectDB() {
     .then(() => {
       console.log(`Running on port: ${process.env.PORT}`);
     })
-    .catch(() => {
+    .catch((error) => {
+      console.log(error);
       console.log("Something went wrong...");
     });
 }
