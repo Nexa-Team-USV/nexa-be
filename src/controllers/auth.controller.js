@@ -1,5 +1,6 @@
 import validator from "validator";
 import bcrypt from "bcrypt";
+import { generate } from "generate-password";
 
 import { User } from "../models/user.model.js";
 import { generateJWT } from "../utils/generateJWT.js";
@@ -7,7 +8,7 @@ import { generateJWT } from "../utils/generateJWT.js";
 const { isEmail, isStrongPassword } = validator;
 
 export const signup = async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, role } = req.body;
 
   try {
     // Email validation
@@ -17,15 +18,6 @@ export const signup = async (req, res) => {
 
     if (!isEmail(email)) {
       throw new Error("Invalid email!");
-    }
-
-    // Password validation
-    if (!password) {
-      throw new Error("The password field is required!");
-    }
-
-    if (!isStrongPassword(password)) {
-      throw new Error("Password not strong enough!");
     }
 
     // Role validation
@@ -43,6 +35,12 @@ export const signup = async (req, res) => {
       throw new Error("This user already exists!");
     }
 
+    const password = generate({
+      length: 40,
+      numbers: true,
+      symbols: true,
+    });
+
     // Hashes the password
     const hashed = bcrypt.hashSync(password, 10);
 
@@ -50,15 +48,7 @@ export const signup = async (req, res) => {
     const user = new User({ username: "", email, password: hashed, role });
     await user.save();
 
-    // Generates the jwt
-    const token = generateJWT({
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-    });
-
-    res.status(201).json({ token });
+    res.status(201).json({ message: "User created!" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
