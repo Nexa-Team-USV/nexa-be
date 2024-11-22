@@ -4,7 +4,7 @@ import { generate } from "generate-password";
 
 import { User } from "../models/user.model.js";
 
-const { isEmail, isStrongPassword } = validator;
+const { isEmail } = validator;
 
 export const signup = async (req, res) => {
   const { email, specialization, group, role } = req.body;
