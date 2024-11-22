@@ -97,7 +97,6 @@ export const login = async (req, res) => {
     // Generates the jwt
     const token = generateJWT({
       id: user._id,
-      username: user.username,
       email: user.email,
     });
 
