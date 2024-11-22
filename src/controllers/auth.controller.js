@@ -1,5 +1,6 @@
 import validator from "validator";
 import bcrypt from "bcrypt";
+import { generate } from "generate-password";
 
 import { User } from "../models/user.model.js";
 import { generateJWT } from "../utils/generateJWT.js";
@@ -19,20 +20,6 @@ export const signup = async (req, res) => {
       throw new Error("Invalid email!");
     }
 
-    // Specialization validation
-    if (!specialization) {
-      throw new Error("The specialization field is required!");
-    }
-
-    if (!(specialization === "licenta" || specialization === "master")) {
-      throw new Error("Invalid specialization!");
-    }
-
-    // Group validation
-    if (!group) {
-      throw new Error("The group field is required!");
-    }
-
     // Role validation
     if (!role) {
       throw new Error("The role field is required!");
@@ -40,6 +27,22 @@ export const signup = async (req, res) => {
 
     if (!(role === "admin" || role === "teacher" || role === "student")) {
       throw new Error("Invalid role!");
+    }
+
+    // Specialization validation
+    if (role === "student") {
+      if (!specialization) {
+        throw new Error("The specialization field is required!");
+      }
+
+      if (!(specialization === "licenta" || specialization === "master")) {
+        throw new Error("Invalid specialization!");
+      }
+
+      // Group validation
+      if (!group) {
+        throw new Error("The group field is required!");
+      }
     }
 
     // Check if user exists
