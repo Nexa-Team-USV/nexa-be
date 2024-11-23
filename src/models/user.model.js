@@ -12,4 +12,4 @@ const userSchema = new mongooseClient.Schema(
   { timestamps: true }
 );
 
-export const User = mongooseClient.model("user", userSchema);
+export const User = mongooseClient.model("User", userSchema);
