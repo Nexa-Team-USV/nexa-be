@@ -185,10 +185,17 @@ export const resetPassword = async (req, res) => {
 export const getCurrentUser = async (req, res) => {
   const headers = req.headers;
 
-  const userId = decodeJWT(headers.authorization);
-
   try {
+    const userId = decodeJWT(headers.authorization).id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    res.status(200).json(user);
   } catch (error) {
-    res.send(400).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
