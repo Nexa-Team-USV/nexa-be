@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 
 import { User } from "../models/user.model.js";
 import { generateJWT } from "../utils/generateJWT.js";
+import { decodeJWT } from "../utils/decodeJWT.js";
 
 const { isEmail } = validator;
 
@@ -114,5 +115,16 @@ export const login = async (req, res) => {
     res.status(200).json({ token });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const getCurrentUser = async (req, res) => {
+  const headers = req.headers;
+
+  const userId = decodeJWT(headers.authorization);
+
+  try {
+  } catch (error) {
+    res.send(400).json({ message: error.message });
   }
 };
