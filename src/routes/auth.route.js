@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  getCurrentUser,
   login,
   resetPassword,
   signup,
@@ -12,8 +11,6 @@ router.post("/signup", signup);
 
 router.post("/login", login);
 
-router.put("/resetPassword", resetPassword);
-
-router.get("/getCurrentUser", getCurrentUser);
+router.put("/reset-password", resetPassword);
 
 export default router;

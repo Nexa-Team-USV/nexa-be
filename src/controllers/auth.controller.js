@@ -177,25 +177,6 @@ export const resetPassword = async (req, res) => {
 
     res.status(200).json({ message: "Password reset successfully!" });
   } catch (error) {
-    console.error("Error during password reset:", error);
-    res.status(400).json({ message: error.message });
-  }
-};
-
-export const getCurrentUser = async (req, res) => {
-  const headers = req.headers;
-
-  try {
-    const userId = decodeJWT(headers.authorization).id;
-
-    const user = await User.findById(userId);
-
-    if (!user) {
-      throw new Error("User not found!");
-    }
-
-    res.status(200).json(user);
-  } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
