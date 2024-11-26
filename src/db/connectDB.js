@@ -10,6 +10,6 @@ export function connectDB() {
     })
     .catch((error) => {
       console.log(error);
-      console.log("Something went wrong...");
+      console.log("Error at DB connection: ", error);
     });
 }
