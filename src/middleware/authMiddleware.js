@@ -1,6 +1,12 @@
 import jwt from "jsonwebtoken";
 
 export function authMiddleware(req, res, next) {
+  const auth = req.headers.authorization;
+
+  if (!auth) {
+    return res.status(401).json({ message: "Access denied!" });
+  }
+
   const token = req.headers.authorization.split(" ")[1];
 
   if (!token) {
