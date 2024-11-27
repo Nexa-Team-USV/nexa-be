@@ -4,12 +4,12 @@ import {
   getCurrentUser,
   removeAccount,
   resetPassword,
-  signup,
+  createAccount,
 } from "../controllers/users.controller.js";
 
 const router = express.Router();
 
-router.post("/signup", signup);
+router.post("/signup", createAccount);
 
 router.get("/current-user", getCurrentUser);
 

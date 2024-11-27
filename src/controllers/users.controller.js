@@ -7,7 +7,7 @@ import { decodeJWT } from "../utils/decodeJWT.js";
 
 const { isEmail, isStrongPassword } = validator;
 
-export const signup = async (req, res) => {
+export const createAccount = async (req, res) => {
   const { email, specialization, group, role } = req.body;
 
   try {
