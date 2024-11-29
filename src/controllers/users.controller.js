@@ -106,6 +106,22 @@ export const getCurrentUser = async (req, res) => {
   }
 };
 
+export const getUsers = async (req, res) => {
+  const role = req.params.role;
+
+  try {
+    if (!role) {
+      const students = await User.find({ role: "student" });
+      return res.status(200).json(students);
+    }
+
+    const users = await User.find({ role });
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 export const resetPassword = async (req, res) => {
   const { oldPassword, newPassword, confirmNewPassword } = req.body;
   const headers = req.headers;
@@ -165,10 +181,10 @@ export const resetPassword = async (req, res) => {
 };
 
 export const removeAccount = async (req, res) => {
-  const userEmail = req.body.email;
+  const userId = req.params.id;
 
   try {
-    const deleteUser = await User.findOneAndDelete({ email: userEmail });
+    const deleteUser = await User.findByIdAndDelete(userId);
     if (!deleteUser) throw new Error("User not found!");
     res.status(200).json({ message: "Account deleted successfully!" });
   } catch (error) {
