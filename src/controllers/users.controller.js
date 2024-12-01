@@ -175,3 +175,50 @@ export const removeAccount = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+export const editProfile = async (req, res) => {
+  const { newUsername, newSpecialization, newGroup } = req.body;
+  console.log({ newUsername, newSpecialization, newGroup });
+  const headers = req.headers;
+
+  try {
+    const userId = decodeJWT(headers.authorization.split(" ")[1]).id;
+
+    // Find the user by email
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    // Prepare fields to update
+    const updatedFields = {};
+
+    if (newUsername && newUsername !== user.username) {
+      updatedFields.username = newUsername;
+    }
+
+    if (newSpecialization && newSpecialization !== user.specialization) {
+      updatedFields.specialization = newSpecialization;
+    }
+
+    if (newGroup && newGroup !== user.group) {
+      updatedFields.group = newGroup;
+    }
+
+    if (Object.keys(updatedFields).length === 0) {
+      throw new Error("No fields to update!");
+    }
+
+    // Update the user's profile
+    await User.findByIdAndUpdate(userId, {
+      username: newUsername,
+      specialization: newSpecialization,
+      group: newGroup,
+    });
+
+    res.status(200).json({ message: "Profile updated successfully!" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
