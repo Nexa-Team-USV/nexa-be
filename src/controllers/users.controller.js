@@ -62,7 +62,20 @@ export const createAccount = async (req, res) => {
     const hashed = bcrypt.hashSync(password, 10);
 
     // Creates the user
-    const user = new User({
+    if (role === "admin" || role === "teacher") {
+      const user = await User.create({
+        username: "",
+        email,
+        password: hashed,
+        specialization: "",
+        group: "",
+        role,
+      });
+
+      return res.status(201).json({ user });
+    }
+
+    const user = await User.create({
       username: "",
       email,
       password: hashed,
@@ -70,9 +83,8 @@ export const createAccount = async (req, res) => {
       group,
       role,
     });
-    await user.save();
 
-    res.status(201).json({ message: "User created!" });
+    return res.status(201).json({ user });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -84,17 +96,7 @@ export const getCurrentUser = async (req, res) => {
   try {
     const userId = decodeJWT(headers.authorization.split(" ")[1]).id;
 
-    const query = await User.findById(userId);
-
-    const user = {
-      _id: query._id,
-      username: query.username,
-      email: query.email,
-      specialization: query.specialization,
-      group: query.group,
-      role: query.role,
-      createdAt: query.createdAt,
-    };
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
       throw new Error("User not found!");
@@ -111,11 +113,11 @@ export const getUsers = async (req, res) => {
 
   try {
     if (!role) {
-      const students = await User.find({ role: "student" });
+      const students = await User.find({ role: "student" }).select("-password");
       return res.status(200).json(students);
     }
 
-    const users = await User.find({ role });
+    const users = await User.find({ role }).select("-password");
     res.status(200).json(users);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -184,9 +186,9 @@ export const removeAccount = async (req, res) => {
   const userId = req.params.id;
 
   try {
-    const deleteUser = await User.findByIdAndDelete(userId);
-    if (!deleteUser) throw new Error("User not found!");
-    res.status(200).json({ message: "Account deleted successfully!" });
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) throw new Error("User not found!");
+    res.status(200).json({ user: deletedUser });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
