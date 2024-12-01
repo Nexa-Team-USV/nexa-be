@@ -110,15 +110,19 @@ export const getCurrentUser = async (req, res) => {
 
 export const getUsers = async (req, res) => {
   const role = req.params.role;
+  const limit = req.query.limit;
+  const offset = req.query.offset;
 
   try {
-    if (!role) {
-      const students = await User.find({ role: "student" }).select("-password");
-      return res.status(200).json(students);
-    }
-
     const users = await User.find({ role }).select("-password");
-    res.status(200).json(users);
+
+    const result = users.slice(limit * (offset - 1), limit * offset);
+
+    console.log(Math.ceil(users.length / limit), result.length, limit, offset);
+
+    res
+      .status(200)
+      .json({ users: result, pages: Math.ceil(users.length / limit) });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
