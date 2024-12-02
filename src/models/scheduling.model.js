@@ -8,7 +8,7 @@ const schedulingSchema = new mongooseClient.Schema(
     startTime: String,
     endTime: String,
     type: String,
-    specialization: String,
+    studyType: String,
     group: String,
     teacher_id: { type: mongooseClient.ObjectId, ref: User },
   },

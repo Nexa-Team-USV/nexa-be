@@ -8,7 +8,7 @@ export const schedule = async (req, res) => {
     startTime,
     endTime,
     type,
-    specialization,
+    studyType,
     group,
     teacher_id,
   } = req.body;
@@ -48,8 +48,8 @@ export const schedule = async (req, res) => {
       throw new Error("The specialization field is required!");
     }
 
-    if (!(specialization === "licenta" || specialization === "master")) {
-      throw new Error("Invalid specialization!");
+    if (!(studyType === "licenta" || studyType === "master")) {
+      throw new Error("Invalid study type!!");
     }
 
     // Group validation

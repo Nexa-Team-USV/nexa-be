@@ -8,7 +8,7 @@ import { decodeJWT } from "../utils/decodeJWT.js";
 const { isEmail, isStrongPassword } = validator;
 
 export const createAccount = async (req, res) => {
-  const { email, specialization, group, role } = req.body;
+  const { email, studyType, group, role } = req.body;
 
   try {
     // Email validation
@@ -29,14 +29,14 @@ export const createAccount = async (req, res) => {
       throw new Error("Invalid role!");
     }
 
-    // Specialization validation
+    // Study type validation
     if (role === "student") {
-      if (!specialization) {
-        throw new Error("The specialization field is required!");
+      if (!studyType) {
+        throw new Error("The study type field is required!");
       }
 
-      if (!(specialization === "licenta" || specialization === "master")) {
-        throw new Error("Invalid specialization!");
+      if (!(studyType === "licenta" || studyType === "master")) {
+        throw new Error("Invalid studyType!");
       }
 
       // Group validation
@@ -67,7 +67,7 @@ export const createAccount = async (req, res) => {
         username: "",
         email,
         password: hashed,
-        specialization: "",
+        studyType: "",
         group: "",
         role,
       });
@@ -79,7 +79,7 @@ export const createAccount = async (req, res) => {
       username: "",
       email,
       password: hashed,
-      specialization,
+      studyType,
       group,
       role,
     });
@@ -117,8 +117,6 @@ export const getUsers = async (req, res) => {
     const users = await User.find({ role }).select("-password");
 
     const result = users.slice(limit * (offset - 1), limit * offset);
-
-    console.log(Math.ceil(users.length / limit), result.length, limit, offset);
 
     res
       .status(200)

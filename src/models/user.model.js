@@ -5,7 +5,7 @@ const userSchema = new mongooseClient.Schema(
     username: String,
     email: String,
     password: String,
-    specialization: String,
+    studyType: String,
     group: String,
     role: String,
   },
