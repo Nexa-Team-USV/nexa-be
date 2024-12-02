@@ -1,10 +1,10 @@
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./db/connectDB.js";
-import "dotenv/config";
 import authRoutes from "./routes/auth.route.js";
 import schedulingRoutes from "./routes/scheduling.route.js";
 import usersRoutes from "./routes/users.route.js";
+import notificationsRoutes from "./routes/email.route.js";
 
 const app = express();
 
@@ -18,5 +18,6 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/scheduling", schedulingRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/notifications", notificationsRoutes);
 
 app.listen(process.env.PORT, connectDB);

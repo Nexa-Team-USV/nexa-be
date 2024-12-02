@@ -104,6 +104,7 @@ export const login = async (req, res) => {
 
     // Verify password
     const isPasswordValid = bcrypt.compareSync(password, user.password);
+
     if (!isPasswordValid) {
       throw new Error("Invalid password!");
     }
