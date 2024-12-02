@@ -6,6 +6,7 @@ import {
   resetPassword,
   createAccount,
   getUsers,
+  editProfile,
 } from "../controllers/users.controller.js";
 
 const router = express.Router();
@@ -19,5 +20,7 @@ router.get("/:role", getUsers);
 router.put("/reset-password", resetPassword);
 
 router.delete("/remove-account/:id", removeAccount);
+
+router.put("/edit-profile", editProfile);
 
 export default router;

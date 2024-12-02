@@ -36,7 +36,7 @@ export const createAccount = async (req, res) => {
       }
 
       if (!(studyType === "licenta" || studyType === "master")) {
-        throw new Error("Invalid studyType!");
+        throw new Error("Invalid study type!");
       }
 
       // Group validation
@@ -63,7 +63,7 @@ export const createAccount = async (req, res) => {
 
     // Creates the user
     if (role === "admin" || role === "teacher") {
-      const user = await User.create({
+      await User.create({
         username: "",
         email,
         password: hashed,
@@ -72,10 +72,10 @@ export const createAccount = async (req, res) => {
         role,
       });
 
-      return res.status(201).json({ user });
+      return res.status(201).json({ message: "User created successfully!" });
     }
 
-    const user = await User.create({
+    await User.create({
       username: "",
       email,
       password: hashed,
@@ -84,7 +84,7 @@ export const createAccount = async (req, res) => {
       role,
     });
 
-    return res.status(201).json({ user });
+    res.status(201).json({ message: "User created successfully!" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -109,14 +109,19 @@ export const getCurrentUser = async (req, res) => {
 };
 
 export const getUsers = async (req, res) => {
+  const headers = req.headers;
   const role = req.params.role;
   const limit = req.query.limit;
   const offset = req.query.offset;
 
   try {
+    const userId = decodeJWT(headers.authorization.split(" ")[1]).id;
+
     const users = await User.find({ role }).select("-password");
 
-    const result = users.slice(limit * (offset - 1), limit * offset);
+    const result = users
+      .slice(limit * (offset - 1), limit * offset)
+      .filter((user) => user.id !== userId);
 
     res
       .status(200)
@@ -190,7 +195,70 @@ export const removeAccount = async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(userId);
     if (!deletedUser) throw new Error("User not found!");
-    res.status(200).json({ user: deletedUser });
+    res.status(200).json({ message: "User deleted successfully!" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const editProfile = async (req, res) => {
+  const { newUsername, newStudyType, newGroup } = req.body;
+  const headers = req.headers;
+
+  try {
+    const userId = decodeJWT(headers.authorization.split(" ")[1]).id;
+
+    // Find the user by id
+    const user = await User.findById(userId);
+
+    const { username, studyType, group } = user;
+
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    // Study type validation
+    if (newUsername.length > 20) {
+      throw new Error("The username shouldn't be longer than 20 characters!");
+    }
+
+    // Study type validation
+    if (!(studyType === "licenta" || studyType === "master")) {
+      throw new Error("Invalid study type!");
+    }
+
+    // Prepare fields to update
+    const updatedFields = {};
+
+    if (newUsername && newUsername !== user.username) {
+      updatedFields.username = newUsername;
+    }
+
+    if (newStudyType && newStudyType !== user.specialization) {
+      updatedFields.specialization = newStudyType;
+    }
+
+    if (newGroup && newGroup !== user.group) {
+      updatedFields.group = newGroup;
+    }
+
+    if (Object.keys(updatedFields).length === 0) {
+      throw new Error("No fields to update!");
+    }
+
+    // Update the user's profile
+    await User.findByIdAndUpdate(userId, {
+      username: newUsername || username,
+      studyType: newStudyType || studyType,
+      group: newGroup || group,
+    });
+
+    // Find the updated user
+    const updatedUser = await User.findById(userId).select("-password");
+
+    res
+      .status(200)
+      .json({ user: updatedUser, message: "Profile updated successfully!" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
