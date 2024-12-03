@@ -8,7 +8,7 @@ import { decodeJWT } from "../utils/decodeJWT.js";
 const { isEmail, isStrongPassword } = validator;
 
 export const createAccount = async (req, res) => {
-  const { email, specialization, group, role } = req.body;
+  const { email, studyType, group, role } = req.body;
 
   try {
     // Email validation
@@ -29,14 +29,14 @@ export const createAccount = async (req, res) => {
       throw new Error("Invalid role!");
     }
 
-    // Specialization validation
+    // Study type validation
     if (role === "student") {
-      if (!specialization) {
-        throw new Error("The specialization field is required!");
+      if (!studyType) {
+        throw new Error("The study type field is required!");
       }
 
-      if (!(specialization === "licenta" || specialization === "master")) {
-        throw new Error("Invalid specialization!");
+      if (!(studyType === "licenta" || studyType === "master")) {
+        throw new Error("Invalid study type!");
       }
 
       // Group validation
@@ -62,17 +62,29 @@ export const createAccount = async (req, res) => {
     const hashed = bcrypt.hashSync(password, 10);
 
     // Creates the user
-    const user = new User({
+    if (role === "admin" || role === "teacher") {
+      await User.create({
+        username: "",
+        email,
+        password: hashed,
+        studyType: "",
+        group: "",
+        role,
+      });
+
+      return res.status(201).json({ message: "User created successfully!" });
+    }
+
+    await User.create({
       username: "",
       email,
       password: hashed,
-      specialization,
+      studyType,
       group,
       role,
     });
-    await user.save();
 
-    res.status(201).json({ message: "User created!" });
+    res.status(201).json({ message: "User created successfully!" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -84,23 +96,36 @@ export const getCurrentUser = async (req, res) => {
   try {
     const userId = decodeJWT(headers.authorization.split(" ")[1]).id;
 
-    const query = await User.findById(userId);
-
-    const user = {
-      _id: query._id,
-      username: query.username,
-      email: query.email,
-      specialization: query.specialization,
-      group: query.group,
-      role: query.role,
-      createdAt: query.createdAt,
-    };
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
       throw new Error("User not found!");
     }
 
     res.status(200).json(user);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getUsers = async (req, res) => {
+  const headers = req.headers;
+  const role = req.params.role;
+  const limit = req.query.limit;
+  const offset = req.query.offset;
+
+  try {
+    const userId = decodeJWT(headers.authorization.split(" ")[1]).id;
+
+    const users = await User.find({ role }).select("-password");
+
+    const result = users
+      .slice(limit * (offset - 1), limit * offset)
+      .filter((user) => user.id !== userId);
+
+    res
+      .status(200)
+      .json({ users: result, pages: Math.ceil(users.length / limit) });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -165,30 +190,41 @@ export const resetPassword = async (req, res) => {
 };
 
 export const removeAccount = async (req, res) => {
-  const userEmail = req.body.email;
+  const userId = req.params.id;
 
   try {
-    const deleteUser = await User.findOneAndDelete({ email: userEmail });
-    if (!deleteUser) throw new Error("User not found!");
-    res.status(200).json({ message: "Account deleted successfully!" });
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) throw new Error("User not found!");
+    res.status(200).json({ message: "User deleted successfully!" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
 export const editProfile = async (req, res) => {
-  const { newUsername, newSpecialization, newGroup } = req.body;
-  console.log({ newUsername, newSpecialization, newGroup });
+  const { newUsername, newStudyType, newGroup } = req.body;
   const headers = req.headers;
 
   try {
     const userId = decodeJWT(headers.authorization.split(" ")[1]).id;
 
-    // Find the user by email
+    // Find the user by id
     const user = await User.findById(userId);
+
+    const { username, studyType, group } = user;
 
     if (!user) {
       throw new Error("User not found!");
+    }
+
+    // Study type validation
+    if (newUsername.length > 20) {
+      throw new Error("The username shouldn't be longer than 20 characters!");
+    }
+
+    // Study type validation
+    if (!(studyType === "licenta" || studyType === "master")) {
+      throw new Error("Invalid study type!");
     }
 
     // Prepare fields to update
@@ -198,8 +234,8 @@ export const editProfile = async (req, res) => {
       updatedFields.username = newUsername;
     }
 
-    if (newSpecialization && newSpecialization !== user.specialization) {
-      updatedFields.specialization = newSpecialization;
+    if (newStudyType && newStudyType !== user.specialization) {
+      updatedFields.specialization = newStudyType;
     }
 
     if (newGroup && newGroup !== user.group) {
@@ -212,12 +248,17 @@ export const editProfile = async (req, res) => {
 
     // Update the user's profile
     await User.findByIdAndUpdate(userId, {
-      username: newUsername,
-      specialization: newSpecialization,
-      group: newGroup,
+      username: newUsername || username,
+      studyType: newStudyType || studyType,
+      group: newGroup || group,
     });
 
-    res.status(200).json({ message: "Profile updated successfully!" });
+    // Find the updated user
+    const updatedUser = await User.findById(userId).select("-password");
+
+    res
+      .status(200)
+      .json({ user: updatedUser, message: "Profile updated successfully!" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
