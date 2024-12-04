@@ -40,6 +40,7 @@ export const login = async (req, res) => {
     const token = generateJWT({
       id: user._id,
       email: user.email,
+      role: user.role,
     });
 
     res.status(200).json({ token });

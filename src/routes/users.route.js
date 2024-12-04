@@ -15,7 +15,7 @@ router.post("/create-account", createAccount);
 
 router.get("/current-user", getCurrentUser);
 
-router.get("/:role", getUsers);
+router.get("/retrieve-users/:role", getUsers);
 
 router.put("/reset-password", resetPassword);
 

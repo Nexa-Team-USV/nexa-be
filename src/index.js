@@ -1,11 +1,14 @@
 import express from "express";
 import cors from "cors";
-import { connectDB } from "./db/connectDB.js";
 import "dotenv/config";
+import { connectDB } from "./db/connectDB.js";
+
 import authRoutes from "./routes/auth.route.js";
 import schedulingRoutes from "./routes/scheduling.route.js";
 import usersRoutes from "./routes/users.route.js";
+
 import { authMiddleware } from "./middleware/authMiddleware.js";
+import { rbacMiddleware } from "./middleware/rbacMiddleware.js";
 
 const app = express();
 
@@ -19,6 +22,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 
 app.use(authMiddleware);
+app.use(rbacMiddleware);
 
 app.use("/api/users", usersRoutes);
 app.use("/api/scheduling", schedulingRoutes);
