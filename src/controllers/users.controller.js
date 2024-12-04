@@ -120,12 +120,12 @@ export const getUsers = async (req, res) => {
     const users = await User.find({ role }).select("-password");
 
     const result = users
-      .slice(limit * (offset - 1), limit * offset)
-      .filter((user) => user.id !== userId);
+      .filter((user) => user.id !== userId)
+      .slice(limit * (offset - 1), limit * offset);
 
     res
       .status(200)
-      .json({ users: result, pages: Math.ceil(users.length / limit) });
+      .json({ users: result, pages: Math.ceil(result.length / limit) });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
