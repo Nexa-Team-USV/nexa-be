@@ -9,7 +9,6 @@ export function connectDB() {
       console.log(`Running on port: ${process.env.PORT}`);
     })
     .catch((error) => {
-      console.log(error);
       console.log("Error at DB connection: ", error);
     });
 }
