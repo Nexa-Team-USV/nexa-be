@@ -206,7 +206,9 @@ export const editProfile = async (req, res) => {
   const headers = req.headers;
 
   try {
-    const userId = decodeJWT(headers.authorization.split(" ")[1]).id;
+    const decodedToken = decodeJWT(headers.authorization.split(" ")[1]);
+    const userId = decodedToken.id;
+    const userRole = decodedToken.role;
 
     // Find the user by id
     const user = await User.findById(userId);
@@ -223,8 +225,13 @@ export const editProfile = async (req, res) => {
     }
 
     // Study type validation
-    if (!(studyType === "licenta" || studyType === "master")) {
-      throw new Error("Invalid study type!");
+    if (userRole === "student") {
+      if (
+        newStudyType &&
+        !(newStudyType === "licenta" || newStudyType === "master")
+      ) {
+        throw new Error("Invalid study type!");
+      }
     }
 
     // Prepare fields to update
