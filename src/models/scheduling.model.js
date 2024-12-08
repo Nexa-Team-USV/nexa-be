@@ -3,13 +3,14 @@ import { User } from "./user.model.js";
 
 const schedulingSchema = new mongooseClient.Schema(
   {
+    type: String,
     title: String,
+    studyType: String,
+    group: String,
     date: String,
     startTime: String,
     endTime: String,
-    type: String,
-    studyType: String,
-    group: String,
+    assistants: String,
     teacher_id: { type: mongooseClient.ObjectId, ref: User },
   },
   { timestamps: true }
