@@ -1,5 +1,6 @@
 import { Scheduling } from "../models/scheduling.model.js";
 import { User } from "../models/user.model.js";
+import { Classroom } from "../models/classroom.model.js";
 
 export const schedule = async (req, res) => {
   const {
@@ -71,6 +72,54 @@ export const schedule = async (req, res) => {
     await scheduling.save();
 
     res.status(201).json({ message: "Scheduling created!" });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getAvailableClassrooms = async (req, res) => {
+  const { date, startTime, endTime } = req.body;
+
+  try {
+    // Date valdiation
+    if (!date) {
+      throw new Error("The date field is required!");
+    }
+
+    // Start time valdiation
+    if (!startTime) {
+      throw new Error("The start time field is required!");
+    }
+
+    // End time valdiation
+    if (!endTime) {
+      throw new Error("The end time field is required!");
+    }
+
+    const allClassrooms = await Classroom.find();
+    console.log("All classrooms:", allClassrooms);
+
+    // Find conflicts in Scheduling table
+    const conflictingSchedules = await Scheduling.find({
+      date,
+      $or: [{ startTime: { $lt: endTime }, endTime: { $gt: startTime } }],
+    });
+
+    // Extract booked classrooms
+    const bookedClassrooms = conflictingSchedules.map(
+      (schedule) => schedule.classroom
+    );
+
+    // Filter available classrooms
+    const availableClassrooms = allClassrooms.filter(
+      (room) => !bookedClassrooms.includes(room.classroom)
+    );
+
+    // Respond with available classrooms
+    res.status(200).json({
+      availableClassrooms: availableClassrooms.map((room) => room.classroom),
+    });
   } catch (error) {
     console.log(error);
     res.status(400).json({ message: error.message });
