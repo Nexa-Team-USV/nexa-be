@@ -1,25 +1,15 @@
+import { Classroom } from "../models/classroom.model.js";
 import { Scheduling } from "../models/scheduling.model.js";
 import { User } from "../models/user.model.js";
 import { formatTime } from "../utils/formatTime.js";
 import validator from "validator";
+import { getMilliseconds } from "../utils/getMilliseconds.js";
 
 const { isDate, isTime } = validator;
 
 export const schedule = async (req, res) => {
-  const {
-    type,
-    title,
-    studyType,
-    group,
-    date,
-    startTime,
-    endTime,
-    classrooms,
-    assistants,
-    teacher_id,
-  } = req.body;
-
-  console.log(req.body);
+  const { type, title, studyType, group, date, description, teacher_id } =
+    req.body;
 
   try {
     // Type valdiation
@@ -34,6 +24,10 @@ export const schedule = async (req, res) => {
     // Title valdiation
     if (!title) {
       throw new Error("The title field is required!");
+    }
+
+    if (title.length > 40) {
+      throw new Error("The title shouldn't be longer than 40 characters!");
     }
 
     // Study type validation
@@ -63,35 +57,65 @@ export const schedule = async (req, res) => {
     // }
 
     // Start time vaidation
-    const startTimeFormatted = formatTime(
-      `${req.body.date}T${req.body.startTime}`
-    );
-
-    console.log(startTimeFormatted);
+    const startTime = formatTime(`${req.body.date}T${req.body.startTime}`);
 
     if (!startTime) {
       throw new Error("The start time field is required!");
     }
 
-    // if (!isTime(new Date())) {
-    //   throw new Error("Invalid start time!");
-    // }
+    //  if (!isTime(new Date())) {
+    //    throw new Error("Invalid start time!");
+    //  }
 
     // End time validation
-    const endTimeFormatted = formatTime(`${req.body.date}T${req.body.endTime}`);
+    const endTime = formatTime(`${req.body.date}T${req.body.endTime}`);
 
     if (!endTime) {
       throw new Error("The start time field is required!");
     }
 
+    // Time validation
+    const startTimeInHours = getMilliseconds(startTime) / 1000 / 60 / 60;
+    const endTimeInHours = getMilliseconds(endTime) / 1000 / 60 / 60;
+
+    if (endTimeInHours - startTimeInHours < 1) {
+      throw new Error("The time for a scheduling should be least one hour!");
+    }
+
+    if (endTimeInHours - startTimeInHours > 3) {
+      throw new Error(
+        "The time for a scheduling shouldn't be more than three hours!"
+      );
+    }
+
     // Classrooms validation
+    const classrooms = req.body.classrooms.filter(
+      (classroom) => classroom !== ""
+    );
+
     if (!classrooms.length) {
       throw new Error("No classrooms added!");
     }
 
-    // Assistants validation
-    if (!assistants.length) {
-      throw new Error("No classrooms added!");
+    const allClassrooms = await Classroom.find({});
+    for (let i = 0; i < classrooms.length; i++) {
+      const checkAvailability = allClassrooms.find((classroom) => {
+        if (
+          getMilliseconds(startTime) <= getMilliseconds(classroom.startTime) &&
+          getMilliseconds(endTime) >= getMilliseconds(classroom.startTime) &&
+          getMilliseconds(startTime) <= getMilliseconds(classroom.endTime) &&
+          getMilliseconds(endTime) >= getMilliseconds(classroom.endTime) &&
+          classroom.name === classrooms[i]
+        ) {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (checkAvailability) {
+        throw new Error(`The ${classrooms[i]} classroom is not available!`);
+      }
     }
 
     // Teacher valdiation
@@ -99,17 +123,44 @@ export const schedule = async (req, res) => {
       throw new Error("The teacher field is required!");
     }
 
-    const teacherAlreadyExists = await User.findById(teacher_id);
-    if (!teacherAlreadyExists) {
+    const teacher = await User.findById(teacher_id);
+    if (!teacher) {
       throw new Error("This teacher doesn't exist!");
     }
 
-    // const scheduling = new Scheduling(req.body);
-    // await scheduling.save();
+    // Assistants validation
+    const assistants = req.body.assistants
+      .filter((assistant) => assistant !== "")
+      .join(", ");
 
-    res.status(201).json({ message: "Scheduling created!" });
+    if (!assistants.length) {
+      throw new Error("No assistants added!");
+    }
+
+    const scheduling = await Scheduling.create({
+      type,
+      title,
+      studyType,
+      group,
+      date: new Date(examDate).toISOString(),
+      startTime: new Date(startTime).toISOString(),
+      endTime: new Date(endTime).toISOString(),
+      assistants,
+      description,
+      teacher_id,
+    });
+
+    for (let i = 0; i < classrooms.length; i++) {
+      await Classroom.create({
+        name: classrooms[i],
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
+        scheduling_id: scheduling.id,
+      });
+    }
+
+    res.status(201).json({ scheduling });
   } catch (error) {
-    console.log(error);
     res.status(400).json({ message: error.message });
   }
 };

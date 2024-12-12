@@ -11,6 +11,7 @@ const schedulingSchema = new mongooseClient.Schema(
     startTime: String,
     endTime: String,
     assistants: String,
+    description: String,
     teacher_id: { type: mongooseClient.ObjectId, ref: User },
   },
   { timestamps: true }
