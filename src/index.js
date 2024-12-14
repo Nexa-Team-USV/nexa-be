@@ -25,6 +25,6 @@ app.use(authMiddleware);
 app.use(rbacMiddleware);
 
 app.use("/api/users", usersRoutes);
-app.use("/api/scheduling", schedulingRoutes);
+app.use("/api/schedulings", schedulingRoutes);
 
 app.listen(process.env.PORT, connectDB);
