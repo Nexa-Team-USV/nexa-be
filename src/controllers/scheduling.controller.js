@@ -137,6 +137,8 @@ export const schedule = async (req, res) => {
       throw new Error("No assistants added!");
     }
 
+    console.log(new Date(startTime).toISOString());
+
     const scheduling = await Scheduling.create({
       type,
       title,
@@ -159,6 +161,7 @@ export const schedule = async (req, res) => {
       });
     }
 
+    // res.status(201).json({ message: "Dasdas" });
     res.status(201).json({ scheduling });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -206,11 +209,37 @@ export const getClassrooms = async (req, res) => {
   const schedulingId = req.params.schedulingId;
 
   try {
+    const scheduling = await Scheduling.findById(schedulingId);
+
+    if (!scheduling) {
+      throw new Error("This scheduling doesn't exist!");
+    }
+
     const data = await Classroom.find({ scheduling_id: schedulingId });
 
     const classrooms = data.map((classroom) => classroom.name).join(", ");
 
     res.status(200).json({ classrooms });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const removeScheduling = async (req, res) => {
+  const schedulingId = req.params.schedulingId;
+
+  try {
+    const scheduling = await Scheduling.findByIdAndDelete(schedulingId);
+
+    if (!scheduling) {
+      throw new Error("This scheduling doesn't exist!");
+    }
+
+    await Classroom.deleteMany({
+      scheduling_id: schedulingId,
+    });
+
+    res.status(200).json({ message: "Scheduling deleted successfully!" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

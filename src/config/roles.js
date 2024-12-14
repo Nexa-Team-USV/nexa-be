@@ -18,6 +18,7 @@ export const roles = {
     "schedule",
     "retrieve-schedulings",
     "retrieve-classrooms",
+    "remove-scheduling",
   ],
   student: [
     "edit-profile",
@@ -27,5 +28,6 @@ export const roles = {
     "schedule",
     "retrieve-schedulings",
     "retrieve-classrooms",
+    "remove-scheduling",
   ],
 };
