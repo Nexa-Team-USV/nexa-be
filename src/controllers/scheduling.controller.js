@@ -164,3 +164,54 @@ export const schedule = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+export const getSchedulings = async (req, res) => {
+  const type = req.params.type ? req.params.type : "exams";
+  const studyType = req.query.studyType;
+  const group = req.query.group;
+
+  try {
+    const schedulings = await Scheduling.find({});
+
+    if (!(type === "tests" || type === "exams")) {
+      throw new Error("This type doesn't exist!");
+    }
+
+    const types = {
+      exams: "exam",
+      tests: "test",
+    };
+
+    const filteredByType = schedulings.filter(
+      (scheduling) => scheduling.type === types[type]
+    );
+
+    const filteredByStudyType = studyType
+      ? filteredByType.filter(
+          (scheduling) => scheduling.studyType === studyType
+        )
+      : filteredByType;
+
+    const filteredByGroup = group
+      ? filteredByStudyType.filter((scheduling) => scheduling.group === group)
+      : filteredByStudyType;
+
+    res.status(200).json({ schedulings: filteredByGroup });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getClassrooms = async (req, res) => {
+  const schedulingId = req.params.schedulingId;
+
+  try {
+    const data = await Classroom.find({ scheduling_id: schedulingId });
+
+    const classrooms = data.map((classroom) => classroom.name).join(", ");
+
+    res.status(200).json({ classrooms });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

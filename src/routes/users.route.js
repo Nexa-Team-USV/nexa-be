@@ -7,13 +7,16 @@ import {
   createAccount,
   getUsers,
   editProfile,
+  getUser,
 } from "../controllers/users.controller.js";
 
 const router = express.Router();
 
 router.post("/create-account", createAccount);
 
-router.get("/current-user", getCurrentUser);
+router.get("/retrieve-current-user", getCurrentUser);
+
+router.get("/retrieve-user/:userId", getUser);
 
 router.get("/retrieve-users/:role", getUsers);
 
