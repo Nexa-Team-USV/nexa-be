@@ -6,7 +6,7 @@ import nodemailer from "nodemailer";
 import { User } from "../models/user.model.js";
 import { generateJWT } from "../utils/generateJWT.js";
 
-const { isEmail } = validator;
+const { isEmail, isStrongPassword } = validator;
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
