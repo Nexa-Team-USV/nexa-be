@@ -173,32 +173,36 @@ export const getSchedulings = async (req, res) => {
   const group = req.query.group;
 
   try {
-    const schedulings = await Scheduling.find({});
+    if (studyType || group) {
+      const schedulings = await Scheduling.find({});
 
-    if (!(type === "tests" || type === "exams")) {
-      throw new Error("This type doesn't exist!");
+      if (!(type === "tests" || type === "exams")) {
+        throw new Error("This type doesn't exist!");
+      }
+
+      const types = {
+        exams: "exam",
+        tests: "test",
+      };
+
+      const filteredByType = schedulings.filter(
+        (scheduling) => scheduling.type === types[type]
+      );
+
+      const filteredByStudyType = studyType
+        ? filteredByType.filter(
+            (scheduling) => scheduling.studyType === studyType
+          )
+        : filteredByType;
+
+      const filteredByGroup = group
+        ? filteredByStudyType.filter((scheduling) => scheduling.group === group)
+        : filteredByStudyType;
+
+      return res.status(200).json({ schedulings: filteredByGroup });
     }
 
-    const types = {
-      exams: "exam",
-      tests: "test",
-    };
-
-    const filteredByType = schedulings.filter(
-      (scheduling) => scheduling.type === types[type]
-    );
-
-    const filteredByStudyType = studyType
-      ? filteredByType.filter(
-          (scheduling) => scheduling.studyType === studyType
-        )
-      : filteredByType;
-
-    const filteredByGroup = group
-      ? filteredByStudyType.filter((scheduling) => scheduling.group === group)
-      : filteredByStudyType;
-
-    res.status(200).json({ schedulings: filteredByGroup });
+    res.status(200).json({ schedulings: [] });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -228,12 +232,6 @@ export const removeScheduling = async (req, res) => {
   const schedulingId = req.params.schedulingId;
 
   try {
-    const userRole = decodeJWT(req.headers.authorization.split(" ")[1]).role;
-
-    if (userRole !== "teacher") {
-      throw new Error("Only teachers are allowed to delete a scheduling!!");
-    }
-
     const scheduling = await Scheduling.findByIdAndDelete(schedulingId);
 
     if (!scheduling) {
