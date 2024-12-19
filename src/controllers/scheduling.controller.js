@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { formatTime } from "../utils/formatTime.js";
 import validator from "validator";
 import { getMilliseconds } from "../utils/getMilliseconds.js";
+import { decodeJWT } from "../utils/decodeJWT.js";
 
 const { isDate, isTime } = validator;
 
@@ -137,8 +138,6 @@ export const schedule = async (req, res) => {
       throw new Error("No assistants added!");
     }
 
-    console.log(new Date(startTime).toISOString());
-
     const scheduling = await Scheduling.create({
       type,
       title,
@@ -229,6 +228,12 @@ export const removeScheduling = async (req, res) => {
   const schedulingId = req.params.schedulingId;
 
   try {
+    const userRole = decodeJWT(req.headers.authorization.split(" ")[1]).role;
+
+    if (userRole !== "teacher") {
+      throw new Error("Only teachers are allowed to delete a scheduling!!");
+    }
+
     const scheduling = await Scheduling.findByIdAndDelete(schedulingId);
 
     if (!scheduling) {
