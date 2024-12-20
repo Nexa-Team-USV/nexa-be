@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  editScheduling,
   getClassrooms,
   getSchedulings,
   removeScheduling,
@@ -15,5 +16,7 @@ router.get("/retrieve-schedulings/:type?", getSchedulings);
 router.get("/retrieve-classrooms/:schedulingId", getClassrooms);
 
 router.delete("/remove-scheduling/:schedulingId", removeScheduling);
+
+router.put("/edit-scheduling/:schedulingId", editScheduling);
 
 export default router;
