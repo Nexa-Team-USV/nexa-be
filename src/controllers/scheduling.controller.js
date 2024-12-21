@@ -248,6 +248,7 @@ export const editScheduling = async (req, res) => {
   const { type, title, studyType, group, date, description } = req.body;
 
   try {
+    // Check if the scheduling exists
     const scheduling = await Scheduling.findById(schedulingId);
 
     if (!scheduling) {
@@ -288,7 +289,6 @@ export const editScheduling = async (req, res) => {
 
     // Date valdiation
     const examDate = new Date(date);
-    const formattedExamDate = `${examDate.getFullYear()}/${examDate.getMonth()}/${examDate.getDate()}`;
 
     if (!date) {
       throw new Error("The date field is required!");
@@ -322,11 +322,12 @@ export const editScheduling = async (req, res) => {
       );
     }
 
-    // Classrooms validation
+    // Deletes the classrooms of the scheduling
     await Classroom.deleteMany({
       scheduling_id: schedulingId,
     });
 
+    // Classrooms validation
     const classrooms = req.body.classrooms.filter(
       (classroom) => classroom !== ""
     );
