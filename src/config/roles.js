@@ -15,6 +15,11 @@ export const roles = {
     "remove-scheduling",
     "edit-scheduling",
   ],
-  student: ["edit-profile", "retrieve-current-user", "reset-password"],
+  student: [
+    "edit-profile",
+    "retrieve-current-user",
+    "reset-password",
+    "proposal",
+  ],
   all: ["retrieve-user", "retrieve-schedulings", "retrieve-classrooms"],
 };

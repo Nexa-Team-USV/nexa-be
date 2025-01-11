@@ -5,6 +5,7 @@ import { connectDB } from "./db/connectDB.js";
 
 import authRoutes from "./routes/auth.route.js";
 import schedulingRoutes from "./routes/scheduling.route.js";
+import proposalRoutes from "./routes/proposal.route.js";
 import usersRoutes from "./routes/users.route.js";
 
 import { authMiddleware } from "./middleware/authMiddleware.js";
@@ -26,5 +27,6 @@ app.use(rbacMiddleware);
 
 app.use("/api/users", usersRoutes);
 app.use("/api/schedulings", schedulingRoutes);
+app.use("/api/proposals", proposalRoutes);
 
 app.listen(process.env.PORT, connectDB);
