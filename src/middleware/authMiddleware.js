@@ -1,7 +1,16 @@
 import jwt from "jsonwebtoken";
+import { roles } from "../config/roles.js";
 
 export function authMiddleware(req, res, next) {
   const auth = req.headers.authorization;
+
+  const isAuthorized = roles.all.some((permission) =>
+    req.url.includes(permission)
+  );
+
+  if (isAuthorized) {
+    return next();
+  }
 
   if (!auth) {
     return res.status(401).json({ message: "Access denied!" });
