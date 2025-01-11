@@ -8,5 +8,5 @@ export const roles = {
     "retrieve-users",
   ],
   teacher: ["current-user", "edit-profile", "reset-password"],
-  student: ["edit-profile", "current-user", "reset-password"],
+  student: ["edit-profile", "current-user", "reset-password", "proposal"],
 };
