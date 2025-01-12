@@ -4,8 +4,8 @@ import jwt from "jsonwebtoken";
 
 import { User } from "../models/user.model.js";
 import { generateJWT } from "../utils/generateJWT.js";
-import { forgotPasswordTemplate } from "../mail/forgot.password.template.js";
-import { transporter } from "../mail/mail.transporter.js";
+import { forgotPasswordTemplate } from "../mail/forgotPasswordTemplate.js";
+import { transporter } from "../mail/mailTransporter.js";
 
 const { isEmail, isStrongPassword } = validator;
 
@@ -94,7 +94,7 @@ export const forgotPassword = async (req, res) => {
         });
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -139,20 +139,18 @@ export const resetForgotPassword = async (req, res) => {
     await User.findByIdAndUpdate(userId, { password: hashedNewPassword });
 
     res.status(200).json({
-      success: true,
       message:
         "Password reset successfully! You can now log in with your new password.",
     });
   } catch (error) {
     // Handle specific errors
-    if (error.name === "TokenExpiredError") {
+    /*if (error.name === "TokenExpiredError") {
       return res.status(400).json({
-        success: false,
         message: "Token has expired. Please request a new password reset.",
       });
-    }
+    }*/
 
     // Handle other error types by using the error message
-    res.status(400).json({ success: false, message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
