@@ -1,10 +1,11 @@
 import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
 
 import { User } from "../models/user.model.js";
 import { generateJWT } from "../utils/generateJWT.js";
+import { forgotPasswordTemplate } from "../mail/forgot.password.template.js";
+import { transporter } from "../mail/mail.transporter.js";
 
 const { isEmail, isStrongPassword } = validator;
 
@@ -69,28 +70,19 @@ export const forgotPassword = async (req, res) => {
       throw new Error("User not found!");
     }
 
-    // Generate a token valid for 1 hour
+    // Generate a token valid for 10 min
     const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "10m",
     });
 
     // Send token to user's email
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587, // Use 587 for STARTTLS (more secure)
-      secure: false, // Set to true for port 465 (SSL)
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
+    const resetLink = `${process.env.CLIENT_URL}/reset-forgot-password?token=${resetToken}`;
+    const emailHtml = forgotPasswordTemplate({ resetLink });
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Password Reset Link",
-      text: `You requested a password reset. Please click the link below to reset your password (valid for 1 hour):\n\n
-      ${process.env.CLIENT_URL}/reset-forgot-password?token=${resetToken}`,
+      html: emailHtml,
     };
 
     transporter.sendMail(mailOptions, (err, info) => {
@@ -138,12 +130,6 @@ export const resetForgotPassword = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) {
       throw new Error("User not found!");
-    }
-
-    // Validate that the new password is different from the old one
-    const isNewPasswordValid = await bcrypt.compare(password, user.password);
-    if (isNewPasswordValid) {
-      throw new Error("New password cannot be the same as your old password!");
     }
 
     // Hash the new password
