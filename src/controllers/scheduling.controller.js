@@ -72,9 +72,7 @@ export const schedule = async (req, res) => {
     const duplicateExam = await Scheduling.findOne({
       title,
       group: group.toUpperCase(),
-      date: {
-        $eq: examDate.toISOString().split("T")[0],
-      },
+      date: examDate.toISOString(),
     });
 
     if (duplicateExam) {
