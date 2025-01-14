@@ -42,11 +42,45 @@ export const schedule = async (req, res) => {
       throw new Error("The group field is required!");
     }
 
-    // Date valdiation
+    // Date validation
     const examDate = new Date(date);
+    const currentDate = new Date();
 
     if (!date) {
-      throw new Error("The date field is required!");
+      throw new Error("The date field is required and cannot be in the past!");
+    }
+
+    if (examDate < currentDate) {
+      throw new Error("The date cannot be in the past!");
+    }
+
+    // Check for existing schedules on the same date for the same group
+    const existingSchedules = await Scheduling.find({
+      group: group.toUpperCase(),
+      date: {
+        $eq: examDate.toISOString().split("T")[0], // Only compare the date part
+      },
+    });
+
+    if (existingSchedules.length > 0) {
+      throw new Error(
+        `An exam is already scheduled for group ${group} on this date!`
+      );
+    }
+
+    // Check for duplicate exam titles
+    const duplicateExam = await Scheduling.findOne({
+      title,
+      group: group.toUpperCase(),
+      date: {
+        $eq: examDate.toISOString().split("T")[0],
+      },
+    });
+
+    if (duplicateExam) {
+      throw new Error(
+        `An exam with the title "${title}" is already scheduled for group ${group} on this date!`
+      );
     }
 
     // Start time vaidation

@@ -21,5 +21,10 @@ export const roles = {
     "reset-password",
     "proposal",
   ],
-  all: ["retrieve-user", "retrieve-schedulings", "retrieve-classrooms"],
+  all: [
+    "retrieve-user",
+    "retrieve-schedulings",
+    "retrieve-classrooms",
+    "send-exam-proposal",
+  ],
 };

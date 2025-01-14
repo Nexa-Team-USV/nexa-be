@@ -16,8 +16,17 @@ export const createProposal = async (req, res) => {
 
     // Date validation
     const proposalDate = new Date(date);
-    if (!date || isNaN(proposalDate.getTime())) {
-      throw new Error("The date field is required and should be valid!");
+    const currentDate = new Date();
+    if (!date) {
+      throw new Error("The date field is required!");
+    }
+
+    if (isNaN(proposalDate.getTime())) {
+      throw new Error("The date should be valid!");
+    }
+
+    if (proposalDate < currentDate) {
+      throw new Error("The date cannot be in the past!");
     }
 
     // Type validation
@@ -35,6 +44,19 @@ export const createProposal = async (req, res) => {
     // Group validation
     if (!group) {
       throw new Error("The group field is required!");
+    }
+
+    // Check for duplicate proposals
+    const duplicateProposal = await Proposal.findOne({
+      title,
+      date: proposalDate.toISOString(),
+      type,
+      studyType,
+      group,
+    });
+
+    if (duplicateProposal) {
+      throw new Error(`A proposal with the same details already exists!`);
     }
 
     // Save proposal
